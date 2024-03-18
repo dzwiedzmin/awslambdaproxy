@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/pkg/errors"
 )
@@ -43,6 +44,8 @@ func (l *lambdaExecutionManager) run() {
 			err := l.executeFunction(region, setInvokeConfig)
 			if err != nil {
 				log.Println(err)
+			        time.Sleep(3 * time.Second)
+				continue
 			}
 			time.Sleep(l.frequency)
 		}
@@ -92,12 +95,30 @@ func (l *lambdaExecutionManager) executeFunction(region int, setInvokeConfig boo
 		Payload:        payload,
 	}
 
+	for {
+
 	log.Printf("Invoking Lambda function with UUID=%v\n", lambdaPayload.UUID)
 	_, err = svc.Invoke(params)
+
 	if err != nil {
+
+	if awsErr, ok := err.(awserr.Error); ok {
+		// Process error with Code, Message, and original error (if any)
+	        log.Printf("Error invoking Lambda function: %s, Message: %s\n", awsErr.Code(), awsErr.Message())
+
+	        if awsErr.Code() == lambda.ErrCodeResourceConflictException { // Check the specific error code
+		        time.Sleep(3 * time.Second)
+			continue;
+	        }
+   	 }
+
 		return errors.Wrap(err, "Failed to execute Lambda function")
 	}
+	log.Println("==================== INVOKED :-) ==================================");
 	return nil
+	}
+
+	return nil;
 }
 
 func newLambdaExecutionManager(name string, publicIP string, regions []string, frequency time.Duration, sshUser string, sshPort string,

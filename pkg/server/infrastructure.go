@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	lambdaFunctionHandler     = "main"
-	lambdaFunctionRuntime     = "go1.x"
+	lambdaFunctionHandlerORIG     = "main"
+	lambdaFunctionRuntimeORIG     = "go1.x"
+	lambdaFunctionHandler     = "bootstrap"
+	lambdaFunctionRuntime     = "provided.al2023"
 	lambdaFunctionZipLocation = "artifacts/lambda.zip"
 )
 
@@ -152,6 +154,8 @@ func (infra *lambdaInfrastructure) createOrUpdateLambdaFunction(sess *session.Se
 		}
 	}
 
+        print("HERE[createOrUpdateLambdaFunction]")
+
 	return infra.createLambdaFunction(svc, roleArn, payload)
 }
 
@@ -178,8 +182,14 @@ func (infra *lambdaInfrastructure) createLambdaFunction(svc *lambda.Lambda, role
 		Publish:      aws.Bool(true),
 		Timeout:      aws.Int64(infra.lambdaTimeout),
 	})
+
+        print("HERE[createLambdaFunction]\n")
+
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
+
+			print(awsErr.Code(), " ", infra.name, " ", roleArn, " ", lambdaFunctionHandler, " ", lambdaFunctionRuntime, " ", infra.lambdaMemorySize, " ", infra.lambdaTimeout, "\n")
+
 			if awsErr.Code() == "InvalidParameterValueException" {
 				time.Sleep(time.Second)
 				return infra.createLambdaFunction(svc, roleArn, payload)

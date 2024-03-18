@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
@@ -67,8 +68,8 @@ func (t *connectionManager) runTunnel() {
 	allLambdaIPs := map[string]int{}
 	for {
 		if len(t.tunnelConnections) > maxTunnels {
-			log.Println("Too many active tunnelConnections: " + string(len(t.tunnelConnections)) + ". MAX=" +
-				string(maxTunnels) + ". Waiting for cleanup.")
+			log.Println("Too many active tunnelConnections: " + fmt.Sprint(len(t.tunnelConnections)) + ". MAX=" +
+				fmt.Sprint(maxTunnels) + ". Waiting for cleanup.")
 			time.Sleep(time.Second * 5)
 			continue
 		}

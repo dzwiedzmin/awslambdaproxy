@@ -59,7 +59,7 @@ fmt:
 	go fmt ./...
 
 lambda-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o artifacts/lambda/main ./pkg/lambda
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o artifacts/lambda/bootstrap ./pkg/lambda
 	zip -jr artifacts/lambda artifacts/lambda
 	go-bindata -nocompress -pkg server -o pkg/server/bindata.go artifacts/lambda.zip
 	mv artifacts/lambda.zip artifacts/lambda-$(VERSION).zip
